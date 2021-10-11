@@ -9,7 +9,7 @@
 
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
 
-std::string path_basic { "/home/famillevincent/" };
+std::string path_basic { "/home/" };
 std::vector<std::string> agree;
 
 webserver web(path_basic );
