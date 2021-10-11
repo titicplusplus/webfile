@@ -1,0 +1,22 @@
+#search {
+	margin-top: 5px;
+	margin-bottom: 5px;
+	width: all;
+}
+
+
+form {
+	width: 99.5%;
+}
+
+form input {
+	font-size: 50px;
+}
+
+#s {
+	width: 80%;
+}
+
+#rr {
+	display: none;
+}

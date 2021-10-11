@@ -1,0 +1,63 @@
+div {
+	padding: 10px;
+	
+	border-top: 3px solid black;
+	width: all;
+	cursor:pointer;
+	display: flex;
+	justify-content: space-between;
+
+
+}
+
+p {
+	padding: 0px;
+	margin: 0px;
+	font-size: 60px;
+
+	word-wrap: break-word;
+	overflow: hidden;
+}
+
+img {
+	height: 60px;
+}
+
+a {
+	display: block;
+	width: 100%;
+
+
+	word-wrap: break-word;
+}
+
+#back {
+	position: fixed;
+	width: 100px;
+	height: 100px;
+	cursor:pointer;
+}
+
+#back img {
+	width: 100px;
+	height: 100px;
+}
+
+header {
+	background-color: black;
+
+	display: flex;
+	justify-content: space-around;
+}
+
+header button {
+	font-size: 60px;
+	margin: 10px;
+	top: 0px;
+	left: 0px;
+}
+
+#start
+{
+	margin-top: 200px;
+}
