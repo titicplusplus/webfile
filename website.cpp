@@ -121,6 +121,50 @@ std::string webserver::index(std::string folder)
 
 	return http;
 }
+		
+std::string webserver::onlypath(std::string folder)
+{
+	std::string all_path { m_path + folder };
+	std::string html {""} ;
+	
+	std::vector<fs::path> v_folder;
+	std::vector<fs::path> v_file;
+
+
+	for (const auto &entry : fs::directory_iterator(all_path))
+	{
+		if (fs::is_directory( entry.path() ))
+		{
+			v_folder.emplace_back( entry );
+		}
+		else
+		{
+			v_file.emplace_back( entry );
+		}	
+	}
+
+
+	std::sort( v_folder.begin(), v_folder.end(), compareFunction);//sort the vector
+	std::sort( v_file.begin(), v_file.end(), compareFunction);//sort the vector
+
+	if (folder != "")
+		folder += "/";
+
+	for (const auto &entry : v_folder)
+	{
+		std::string path_n = entry.filename();
+	
+		html += path_n + "\n" + remove(folder + path_n) + "\n/icon/folder.png\n";
+	}
+
+	for (const auto &entry : v_file)
+	{
+		html += file_tostring( entry, folder, false );
+	}
+
+
+	return html;
+}
 
 std::string webserver::getpath( std::string folder )
 {
@@ -156,15 +200,25 @@ std::string webserver::getpath( std::string folder )
 
 	for (const auto &entry : v_file)
 	{
-		html += file_tostring( entry, folder );
+		html += file_tostring( entry, folder, true );
 	}
 
 	return html;
 
 
 }
+		
+std::string webserver::nomaj( std::string extname ) {
+	for (int i = 0; i < extname.size(); i++) {
+		if (extname[i] > 64 and extname[i] < 91) {
+			extname[i] += 32;
+		}
+	}
 
-std::string webserver::file_tostring( const fs::path &entry, std::string &folder )
+	return extname;
+}
+
+std::string webserver::file_tostring( const fs::path &entry, std::string &folder, bool html_render )
 {
 	std::string path_n = entry.filename();
 
@@ -188,12 +242,12 @@ std::string webserver::file_tostring( const fs::path &entry, std::string &folder
 
 	if (ext != "" && ext != ".")
 	{
-		if( fs::exists("icon/" + ext.substr(1) + ".png"))
-			image = "/icon/" + ext.substr(1) + ".png";
+		if( fs::exists("icon/" + nomaj(ext.substr(1)) + ".png"))
+			image = "/icon/" + nomaj(ext.substr(1)) + ".png";
 	}
 	
 
-	if (ext == ".pdf")
+	if (ext == ".pdf" && html_render)
 	{
 		add += ".titicplusplus.html";
 	}
@@ -202,15 +256,22 @@ std::string webserver::file_tostring( const fs::path &entry, std::string &folder
 		add += ".titicplusplus.mp3";
 	}
 
-	if (ext == ".jpg" || ext == ".JPG" || ext == ".jpeg" || ext == ".JPEG" || ext == ".png" || ext == ".PNG" || ext == ".gif" || ext == ".GIF" || ext == ".bmp" || ext == ".BMP" || ext == ".svg" || ext == ".SVG")
+
+	if (html_render)
 	{
-		image = before +remove( folder + path_n + add);
+
+		if (ext == ".jpg" || ext == ".JPG" || ext == ".jpeg" || ext == ".JPEG" || ext == ".png" || ext == ".PNG" || ext == ".gif" || ext == ".GIF" || ext == ".bmp" || ext == ".BMP" || ext == ".svg" || ext == ".SVG")
+		{
+			image = before +remove( folder + path_n + add);
+		}
+	
+		return "<div> <p> <a href=\"" + before +remove( folder + path_n + add)
+		 + "\"> <img src=\"" + image + "\" > " + path_n + "</a> </p> <p>" 
+		 //+ "\"> <img src=\"" + before +remove( folder + path_n + add) + "\" > " + path_n + "</a> </p> <p>" 
+		+ file_size + " </p>  </div>";
 	}
 	
-	return "<div> <p> <a href=\"" + before +remove( folder + path_n + add)
-	 + "\"> <img src=\"" + image + "\" > " + path_n + "</a> </p> <p>" 
-	 //+ "\"> <img src=\"" + before +remove( folder + path_n + add) + "\" > " + path_n + "</a> </p> <p>" 
-	+ file_size + " </p>  </div>";
+	return path_n + "\n" + before +remove( folder + path_n + add) + "\n" + image + "\n";
 }
 
 
@@ -392,6 +453,104 @@ std::string webserver::next(std::string img_n, std::string why)
 	return result;
 }
 
+
+std::string webserver::getallimg(std::string img)
+{
+	std::cout << "cc" << std::endl;
+	std::vector<std::string> img_list;
+	std::cout << "cc" << std::endl;
+	std::string html = "";
+	std::cout << img << std::endl;
+
+	if (img.size() > 11 && (img.substr(0, 10) == "/download/"))// || img.substr(0, 10) == "/download/"))
+	{
+		img.substr(11);
+		std::cout << "mais ui" << std::endl;
+	}
+
+	auto it = img.find_last_of("/");
+	std::string folder_img;
+	std::string name_img;
+
+
+
+	if (it != std::string::npos)
+	{	
+		folder_img = img.substr(0, it+1);
+		name_img = img.substr(it+1);
+	}
+	else
+	{
+		folder_img = "";
+		name_img = img;
+	}
+
+
+	std::cout << m_path + folder_img << std::endl;
+
+
+	for ( const auto &entry : fs::directory_iterator(m_path + folder_img))
+	{
+		std::string ext { entry.path().extension() };
+
+		if (ext == ".jpg" || ext == ".JPG" || ext == ".jpeg" || ext == ".JPEG" || ext == ".png" || ext == ".PNG" || ext == ".gif" || ext == ".GIF" || ext == ".bmp" || ext == ".BMP" || ext == ".svg" || ext == ".SVG")
+		{
+			/**if (status == 0) {
+				std::string name = entry.path().filename();
+				if (name == name_img)
+				{
+					html += "/download/" + folder_img + name + "\n";
+					status = 1;
+				}
+				else {
+					img_list.push_back(name);
+				}
+			}
+			else if (status == 1) {
+				std::string name = entry.path().filename();
+				html += "/download/" + folder_img + name + "\n";
+			}**/
+			img_list.push_back(entry.path().filename());
+		}
+
+	}
+	std::sort( img_list.begin(), img_list.end(), compareFunction);//sort the vector
+
+	
+	/**int end = 0;
+	bool status = false;
+
+	for (int i = 0; i < img_list.size(); i++) {
+		if (status) {
+			html += "/download/" + folder_img + img_list[i] + "\n";
+		}
+		else {
+			if (img_list[i] == name_img) {
+				html += "/download/" + folder_img + img_list[i] + "\n";
+				status = 1;
+				end = i;
+			}
+		}
+
+		
+	}**/
+
+	int place = 0;
+	for (int i = 0; i < img_list.size(); i++) {
+		html += "/download/" + folder_img + img_list[i] + "\n";
+		if (img_list[i] == name_img) {
+			place = i;
+		}
+	}
+
+	std::cout << "The place is " << place << std::endl;
+
+	html += std::to_string(place) + "\n";
+
+	return html;
+
+}
+
 std::string webserver::search()
 {
 	std::string http {""};
@@ -423,7 +582,7 @@ std::string webserver::search_file( std::string name )
 		std::string path_n = line.substr( m_path.size() );
 		if (fs::is_directory( line ))
 		{
-			html += "<div onclick=\"go_dir('" + remove(m_path + path_n) + "/')\"> <p> <img src=\"/icon/folder.png\" >" + path_n + "</p> </div>";
+			html += "<div onclick=\"go_dir('" + remove(path_n) + "/')\"> <p> <img src=\"/icon/folder.png\" >" + path_n + "</p> </div>";
 		}
 		else
 		{
@@ -432,7 +591,7 @@ std::string webserver::search_file( std::string name )
 			folder += "/";
 			
 			folder = folder.substr( m_path.size() );
-			html += file_tostring( path, folder );
+			html += file_tostring( path, folder, true );
 		}
 	}
 

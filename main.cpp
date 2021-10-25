@@ -3,27 +3,29 @@
 #include <simple-web-server/server_http.hpp>
 #include "website.hpp"
 #include <curl/curl.h> 
+#include <csignal>
 
 // g++ main.cpp website.cpp -o exe -pthread -lboost_system  -lstdc++fs -lcurl
 
 
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
 
-std::string path_basic { "/home/" };
+std::string path_basic { "/mnt/Sauvgarde/" };
 std::vector<std::string> agree;
 
 webserver web(path_basic );
+HttpServer server;
 
-int downlaod_all_file()
-{
-
+void signal_end(int signal) {
+	server.stop();
 }
 
 int main()
 {
 	system("rm temp/* -r");
+	std::signal(SIGINT, signal_end);
+	std::signal(SIGTERM, signal_end);
 	
-	HttpServer server;
 	server.config.port = 5000;
 
 
@@ -164,7 +166,6 @@ int main()
 				}
 
 				response->write( http );
-
 			}			
 
 
@@ -179,6 +180,24 @@ int main()
 			auto query_fields = request->parse_query_string();
 			std::string img { path.substr(15) };
 			response->write( web.next( img, query_fields.find("next")->second ) );
+
+		}
+		else if (path.substr(0, 9) == "/dir_api/")
+		{
+			std::string folder { path.substr(9) };
+			CURL *curl;
+			std::string folder2 {  curl_easy_unescape( curl, folder.c_str() , 0, NULL) };
+
+			response->write( web.onlypath( folder2 ));
+
+		}
+		else if (path.substr(0, 9) == "/img_api/")
+		{
+			std::string folder { path.substr(9) };
+			CURL *curl;
+			std::string folder2 {  curl_easy_unescape( curl, folder.c_str() , 0, NULL) };
+
+			response->write( web.getallimg( folder2 ));
 
 		}
 	};

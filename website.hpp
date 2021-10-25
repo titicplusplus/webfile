@@ -42,16 +42,20 @@ class webserver
 
 		std::string index(std::string folder);
 		std::string getpath(std::string folder);
-		std::string file_tostring( const fs::path &entry, std::string &folder );
+		std::string onlypath(std::string folder);
+		std::string file_tostring( const fs::path &entry, std::string &folder, bool html_render  );
 
 		std::string convert( std::string path , int i);
 
 
 		std::string img_index(std::string img);
 		std::string next(std::string img_n, std::string why);
+		std::string getallimg(std::string img);
 
 		std::string search();		
 		std::string search_file( std::string name );		
+
+		std::string nomaj( std::string extname );
 
 		~webserver();
 
